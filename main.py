@@ -56,10 +56,10 @@ def main():
     user_input = st.text_area("Type your message here...", key="user_input", height=100)
     
     # Send button
-    if st.button("Send", key="send_button"):
+    if st.button("Send", key="send_button") and user_input:
         chat_handler.process_user_input(user_input)
-        # Clear input after sending
-        st.session_state.user_input = ""
+        # Reset the text input widget using session state
+        st.session_state["user_input"] = ""
         # Rerun to update the chat display
         st.rerun()
     
