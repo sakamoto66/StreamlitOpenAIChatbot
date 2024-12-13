@@ -111,7 +111,7 @@ def main():
         st.session_state.message_counter = 0
 
     # Display chat messages
-    st.markdown('<div class="chat-messages">bbbb', unsafe_allow_html=True)
+    st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
     for message in st.session_state.messages[1:]:  # Skip the system message
         role = message["role"]
         content = message["content"]
