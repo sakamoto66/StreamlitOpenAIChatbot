@@ -2,6 +2,7 @@ import streamlit as st
 from chat_handler import ChatHandler
 from styles import get_css
 import streamlit.components.v1 as components
+import html
 
 def main():
     st.set_page_config(
@@ -73,7 +74,7 @@ def main():
             </div>
             <div class="{role}-message">
                 <div class="message-content">
-                    {content}
+                    {html.escape(content)}
                 </div>
             </div>
         </div>
