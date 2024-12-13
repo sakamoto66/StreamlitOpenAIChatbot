@@ -60,25 +60,6 @@ def main():
     
     # Display chat messages
     st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
-    for message in st.session_state.messages[1:]:  # Skip the system message
-        role = message["role"]
-        content = message["content"]
-        
-        # Define icon based on role
-        icon = "👤" if role == "user" else "🤖"
-        
-        st.markdown(f"""
-        <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
-            <div class="message-icon">
-                {icon}
-            </div>
-            <div class="{role}-message">
-                <div class="message-content">
-                    {html.escape(content)}
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Initialize message counter in session state if it doesn't exist
@@ -118,22 +99,30 @@ def main():
     # Send button
     if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
         if user_input and user_input.strip():
-            # Create a placeholder for user message
-            user_message_placeholder = chat_placeholder.markdown(f"""
-            <div class="message-wrapper user-message-wrapper">
-                <div class="message-icon">
-                    👤
-                </div>
-                <div class="user-message">
-                    <div class="message-content">
-                        {html.escape(user_input)}
+            # Add user message to chat history first
+            chat_handler.add_message("user", user_input)
+            
+            # Clear and recreate the chat placeholder
+            chat_placeholder.empty()
+            
+            # Display all messages including the new user message
+            for msg in st.session_state.messages[1:]:  # Skip the system message
+                role = msg["role"]
+                content = msg["content"]
+                icon = "👤" if role == "user" else "🤖"
+                
+                chat_placeholder.markdown(f"""
+                <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
+                    <div class="message-icon">
+                        {icon}
+                    </div>
+                    <div class="{role}-message">
+                        <div class="message-content">
+                            {html.escape(content)}
+                        </div>
                     </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Add user message to chat history
-            chat_handler.add_message("user", user_input)
+                """, unsafe_allow_html=True)
             
             # Create a placeholder for streaming response
             message_placeholder = chat_placeholder.empty()
