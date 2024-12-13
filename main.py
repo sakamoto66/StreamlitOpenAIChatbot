@@ -85,6 +85,29 @@ def main():
     if "message_counter" not in st.session_state:
         st.session_state.message_counter = 0
     
+    # Display chat messages from history
+    chat_placeholder = st.container()
+    with chat_placeholder:
+        for message in st.session_state.messages[1:]:  # Skip the system message
+            role = message["role"]
+            content = message["content"]
+            
+            # Define icon based on role
+            icon = "👤" if role == "user" else "🤖"
+            
+            st.markdown(f"""
+            <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
+                <div class="message-icon">
+                    {icon}
+                </div>
+                <div class="{role}-message">
+                    <div class="message-content">
+                        {html.escape(content)}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
     # Chat input with dynamic key
     user_input = st.text_area(
         "Type your message here...",
@@ -99,27 +122,48 @@ def main():
             chat_handler.add_message("user", user_input)
             
             # Create a placeholder for streaming response
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
-                full_response = ""
+            message_placeholder = chat_placeholder.empty()
+            full_response = ""
+            
+            # Get streaming response
+            response, error = chat_handler.get_ai_response(st.session_state.messages)
+            
+            if error:
+                st.session_state.error = error
+            else:
+                # Process the streaming response
+                for chunk in response:
+                    if chunk.choices[0].delta.content is not None:
+                        full_response += chunk.choices[0].delta.content
+                        message_placeholder.markdown(f"""
+                        <div class="message-wrapper">
+                            <div class="message-icon">
+                                🤖
+                            </div>
+                            <div class="assistant-message">
+                                <div class="message-content">
+                                    {html.escape(full_response)}▌
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
                 
-                # Get streaming response
-                response, error = chat_handler.get_ai_response(st.session_state.messages)
+                # Update final response without cursor
+                message_placeholder.markdown(f"""
+                <div class="message-wrapper">
+                    <div class="message-icon">
+                        🤖
+                    </div>
+                    <div class="assistant-message">
+                        <div class="message-content">
+                            {html.escape(full_response)}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                if error:
-                    st.session_state.error = error
-                else:
-                    # Process the streaming response
-                    for chunk in response:
-                        if chunk.choices[0].delta.content is not None:
-                            full_response += chunk.choices[0].delta.content
-                            message_placeholder.markdown(full_response + "▌")
-                    
-                    # Update final response without cursor
-                    message_placeholder.markdown(full_response)
-                    
-                    # Add the full response to chat history
-                    chat_handler.add_message("assistant", full_response)
+                # Add the full response to chat history
+                chat_handler.add_message("assistant", full_response)
             
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
