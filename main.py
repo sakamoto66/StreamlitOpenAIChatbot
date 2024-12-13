@@ -93,31 +93,35 @@ def main():
                     full_response = ""
                     
                     # Stream the response
-                    for chunk in response:
-                        if chunk.choices[0].delta.content is not None:
-                            full_response += chunk.choices[0].delta.content
-                            # Display streaming response
-                            message_placeholder.markdown(f"""
-                            <div class="message-wrapper">
-                                <div class="message-icon">
-                                    🤖
-                                </div>
-                                <div class="assistant-message">
-                                    <div class="message-content">
-                                        {html.escape(full_response)}▌
+                    try:
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                # Display streaming response
+                                message_placeholder.markdown(f"""
+                                <div class="message-wrapper">
+                                    <div class="message-icon">
+                                        🤖
+                                    </div>
+                                    <div class="assistant-message">
+                                        <div class="message-content">
+                                            {html.escape(full_response)}▌
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    # Add the complete response to chat history
-                    chat_handler.add_message("assistant", full_response)
-                    
-                    # Clear the placeholder after streaming is complete
-                    message_placeholder.empty()
-                    
-                    # Rerun to update chat history
-                    st.rerun()
+                                """, unsafe_allow_html=True)
+                        
+                        # Add the complete response to chat history
+                        chat_handler.add_message("assistant", full_response)
+                        
+                        # Clear the placeholder
+                        message_placeholder.empty()
+                        
+                        # Force a rerun without the placeholder
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error during streaming: {str(e)}")
+                        message_placeholder.empty()
     
     # Footer
     st.markdown("---")
