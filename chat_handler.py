@@ -47,7 +47,7 @@ class ChatHandler:
     def add_message(role, content):
         st.session_state.messages.append({"role": role, "content": content})
     
-    def process_user_input(self, user_input, message_placeholder):
+    def process_user_input(self, user_input):
         if not user_input.strip():
             return
         
@@ -67,20 +67,24 @@ class ChatHandler:
         
         # Process streaming response
         full_response = ""
-        for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
-                content = chunk.choices[0].delta.content
-                full_response += content
-                # Update the message content
-                assistant_message["content"] = full_response
-                # Update the display using the placeholder
-                message_placeholder.markdown(f"""
-                <div class="assistant-message">
-                    <div class="message-header">
-                        AI Assistant
-                    </div>
-                    <div class="message-content">
-                        {full_response}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+        
+        # Create a placeholder for streaming response
+        message_placeholder = st.empty()
+        
+        try:
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    # Update the message content
+                    assistant_message["content"] = full_response
+                    # Update the display using the placeholder
+                    message_placeholder.markdown(
+                        f'<div class="assistant-message">'
+                        f'<div class="message-header">AI Assistant</div>'
+                        f'<div class="message-content">{full_response}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+        except Exception as e:
+            st.session_state.error = f"Error during streaming: {str(e)}"

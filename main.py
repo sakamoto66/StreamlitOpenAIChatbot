@@ -94,9 +94,11 @@ def main():
         # Send button
         if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
             if user_input and user_input.strip():
-                chat_handler.process_user_input(user_input, message_placeholder)
+                chat_handler.process_user_input(user_input)
                 # Increment counter to generate new key for next input
                 st.session_state.message_counter += 1
+                # Clear the input after sending
+                st.session_state[f"user_input_{st.session_state.message_counter-1}"] = ""
     
     # Footer
     st.markdown("---")
