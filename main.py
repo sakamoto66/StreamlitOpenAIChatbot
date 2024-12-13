@@ -95,11 +95,34 @@ def main():
     # Send button
     if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
         if user_input and user_input.strip():
-            chat_handler.process_user_input(user_input)
+            # Add user message to chat history
+            chat_handler.add_message("user", user_input)
+            
+            # Create a placeholder for streaming response
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                full_response = ""
+                
+                # Get streaming response
+                response, error = chat_handler.get_ai_response(st.session_state.messages)
+                
+                if error:
+                    st.session_state.error = error
+                else:
+                    # Process the streaming response
+                    for chunk in response:
+                        if chunk.choices[0].delta.content is not None:
+                            full_response += chunk.choices[0].delta.content
+                            message_placeholder.markdown(full_response + "▌")
+                    
+                    # Update final response without cursor
+                    message_placeholder.markdown(full_response)
+                    
+                    # Add the full response to chat history
+                    chat_handler.add_message("assistant", full_response)
+            
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
-            # Rerun to update the chat display
-            st.rerun()
     
     # Footer
     st.markdown("---")
