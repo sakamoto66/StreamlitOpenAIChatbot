@@ -52,16 +52,25 @@ def main():
         </div>
         """, unsafe_allow_html=True)
     
-    # Chat input
-    user_input = st.text_area("Type your message here...", key="user_input", height=100)
+    # Initialize message counter in session state if it doesn't exist
+    if "message_counter" not in st.session_state:
+        st.session_state.message_counter = 0
+    
+    # Chat input with dynamic key
+    user_input = st.text_area(
+        "Type your message here...",
+        key=f"user_input_{st.session_state.message_counter}",
+        height=100
+    )
     
     # Send button
-    if st.button("Send", key="send_button") and user_input:
-        chat_handler.process_user_input(user_input)
-        # Reset the text input widget using session state
-        st.session_state["user_input"] = ""
-        # Rerun to update the chat display
-        st.rerun()
+    if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
+        if user_input and user_input.strip():
+            chat_handler.process_user_input(user_input)
+            # Increment counter to generate new key for next input
+            st.session_state.message_counter += 1
+            # Rerun to update the chat display
+            st.rerun()
     
     # Footer
     st.markdown("---")
