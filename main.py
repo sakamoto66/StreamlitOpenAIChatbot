@@ -50,30 +50,22 @@ def main():
     input_container = st.container()
     
     with input_container:
-        # Chat input
-        user_input = st.text_area(
-            "メッセージを入力してください...",
-            key="user_input",
-            height=100
-        )
-        
-        # Send button
-        if st.button("送信", key="send_button"):
-            if user_input and user_input.strip():
+        # フォームを使用してユーザー入力を管理
+        with st.form(key="chat_form", clear_on_submit=True):
+            user_input = st.text_area(
+                "メッセージを入力してください...",
+                key="user_input_area",
+                height=100
+            )
+            
+            # Submit button
+            submit_button = st.form_submit_button("送信")
+            
+            if submit_button and user_input and user_input.strip():
                 # Add user message to chat history
                 chat_handler.add_message("user", user_input)
-                
-                # Use session state to track when to clear input
-                if "should_clear_input" not in st.session_state:
-                    st.session_state.should_clear_input = True
-                
                 # Rerun to update UI immediately
                 st.rerun()
-                
-        # Clear input if needed
-        if "should_clear_input" in st.session_state and st.session_state.should_clear_input:
-            st.session_state.user_input = ""
-            st.session_state.should_clear_input = False
     
     # Display chat messages
     with chat_container:
