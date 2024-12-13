@@ -113,11 +113,8 @@ def main():
                         # Add the complete response to chat history
                         chat_handler.add_message("assistant", full_response)
                         
-                        # Remove the typing indicator
-                        message_placeholder.empty()
-                        
-                        # Display final message
-                        st.markdown(f"""
+                        # Update the placeholder with the final message
+                        message_placeholder.markdown(f"""
                         <div class="message-wrapper">
                             <div class="message-icon">
                                 🤖
