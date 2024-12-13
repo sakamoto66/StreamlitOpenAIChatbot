@@ -63,11 +63,17 @@ def main():
                 # Add user message to chat history
                 chat_handler.add_message("user", user_input)
                 
-                # Clear the input
-                st.session_state.user_input = ""
+                # Use session state to track when to clear input
+                if "should_clear_input" not in st.session_state:
+                    st.session_state.should_clear_input = True
                 
                 # Rerun to update UI immediately
                 st.rerun()
+                
+        # Clear input if needed
+        if "should_clear_input" in st.session_state and st.session_state.should_clear_input:
+            st.session_state.user_input = ""
+            st.session_state.should_clear_input = False
     
     # Display chat messages
     with chat_container:
