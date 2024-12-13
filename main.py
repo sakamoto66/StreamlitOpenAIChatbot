@@ -79,22 +79,24 @@ def main():
     if "message_counter" not in st.session_state:
         st.session_state.message_counter = 0
     
-    # Chat input with dynamic key
-    user_input = st.text_area(
-        "Type your message here...",
-        key=f"user_input_{st.session_state.message_counter}",
-        height=100
-    )
-    
-    # Create a placeholder for the new message
+    # Create a placeholder for the new message at the bottom of the chat container
     message_placeholder = st.empty()
     
-    # Send button
-    if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
-        if user_input and user_input.strip():
-            chat_handler.process_user_input(user_input, message_placeholder)
-            # Increment counter to generate new key for next input
-            st.session_state.message_counter += 1
+    # Chat input and send button in a separate container at the bottom
+    input_container = st.container()
+    with input_container:
+        user_input = st.text_area(
+            "Type your message here...",
+            key=f"user_input_{st.session_state.message_counter}",
+            height=100
+        )
+        
+        # Send button
+        if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
+            if user_input and user_input.strip():
+                chat_handler.process_user_input(user_input, message_placeholder)
+                # Increment counter to generate new key for next input
+                st.session_state.message_counter += 1
     
     # Footer
     st.markdown("---")
