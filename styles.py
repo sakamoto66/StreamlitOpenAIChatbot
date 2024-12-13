@@ -42,15 +42,16 @@ def get_css():
         }
         
         .user-message {
-            background-color: #f1f1f1;
+            background-color: #e3f2fd;
             padding: 1rem;
             border-radius: 20px;
             border-bottom-right-radius: 5px;
             margin-right: 12px;
             position: relative;
             max-width: 80%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.3s ease-out;
+            border: 2px solid #90caf9;
         }
         
         .assistant-message {
