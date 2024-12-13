@@ -62,10 +62,53 @@ def main():
             submit_button = st.form_submit_button("送信")
             
             if submit_button and user_input and user_input.strip():
-                # Add user message to chat history
-                chat_handler.add_message("user", user_input)
-                # Rerun to update UI immediately
-                st.rerun()
+                # Process user input and get streaming response
+                response = chat_handler.process_user_input(user_input)
+                
+                if isinstance(response, str):
+                    # Show error message if response is string (error message)
+                    st.error(response)
+                else:
+                    # Create placeholder for streaming response
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    
+                    # Display streaming response
+                    for chunk in response:
+                        if chunk.choices[0].delta.content is not None:
+                            full_response += chunk.choices[0].delta.content
+                            message_placeholder.markdown(f"""
+                            <div class="message-wrapper">
+                                <div class="message-icon">
+                                    🤖
+                                </div>
+                                <div class="assistant-message">
+                                    <div class="message-content">
+                                        {html.escape(full_response)}▌
+                                    </div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    # Add the complete response to chat history
+                    chat_handler.add_message("assistant", full_response)
+                    
+                    # Remove the typing indicator
+                    message_placeholder.empty()
+                    
+                    # メッセージを表示
+                    st.markdown(f"""
+                    <div class="message-wrapper">
+                        <div class="message-icon">
+                            🤖
+                        </div>
+                        <div class="assistant-message">
+                            <div class="message-content">
+                                {html.escape(full_response)}
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
     
     # Display chat messages
     with chat_container:
@@ -87,42 +130,8 @@ def main():
             </div>
             """, unsafe_allow_html=True)
         
-        # Handle streaming response if there's a new user message
-        if st.session_state.messages[-1]["role"] == "user":
-            response, error = chat_handler.get_ai_response(st.session_state.messages)
-            
-            if error:
-                st.error(error)
-            else:
-                # Create placeholder for streaming response
-                message_placeholder = st.empty()
-                full_response = ""
-                
-                # Display streaming response
-                for chunk in response:
-                    if chunk.choices[0].delta.content is not None:
-                        full_response += chunk.choices[0].delta.content
-                        message_placeholder.markdown(f"""
-                        <div class="message-wrapper">
-                            <div class="message-icon">
-                                🤖
-                            </div>
-                            <div class="assistant-message">
-                                <div class="message-content">
-                                    {html.escape(full_response)}▌
-                                </div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                # Add the complete response to chat history
-                chat_handler.add_message("assistant", full_response)
-                
-                # Remove the typing indicator
-                message_placeholder.empty()
-                
-                # Rerun to update UI with the new message
-                st.rerun()
+        # Last message display is handled by the streaming logic
+        pass
     
     # Footer
     st.markdown("---")

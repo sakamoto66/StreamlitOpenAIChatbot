@@ -60,5 +60,6 @@ class ChatHandler:
         
         if error:
             st.session_state.error = error
-        else:
-            self.add_message("assistant", response)
+            return error
+        
+        return response
