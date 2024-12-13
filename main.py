@@ -86,14 +86,15 @@ def main():
         height=100
     )
     
+    # Create a placeholder for the new message
+    message_placeholder = st.empty()
+    
     # Send button
     if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
         if user_input and user_input.strip():
-            chat_handler.process_user_input(user_input)
+            chat_handler.process_user_input(user_input, message_placeholder)
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
-            # Rerun to update the chat display
-            st.empty().markdown("", unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")

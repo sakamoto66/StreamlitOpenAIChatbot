@@ -47,16 +47,12 @@ class ChatHandler:
     def add_message(role, content):
         st.session_state.messages.append({"role": role, "content": content})
     
-    def process_user_input(self, user_input):
+    def process_user_input(self, user_input, message_placeholder):
         if not user_input.strip():
             return
         
         # Add user message to chat history
         self.add_message("user", user_input)
-        
-        # Create empty placeholder for assistant's message
-        self.add_message("assistant", "")
-        current_message_idx = len(st.session_state.messages) - 1
         
         # Get AI response stream
         stream, error = self.get_ai_response(st.session_state.messages)
@@ -65,13 +61,26 @@ class ChatHandler:
             st.session_state.error = error
             return
         
+        # Create empty message for assistant's response
+        assistant_message = {"role": "assistant", "content": ""}
+        st.session_state.messages.append(assistant_message)
+        
         # Process streaming response
         full_response = ""
         for chunk in stream:
             if chunk.choices[0].delta.content is not None:
                 content = chunk.choices[0].delta.content
                 full_response += content
-                # Update the current message
-                st.session_state.messages[current_message_idx]["content"] = full_response
-                # Force streamlit to update the display
-                st.rerun()
+                # Update the message content
+                assistant_message["content"] = full_response
+                # Update the display using the placeholder
+                message_placeholder.markdown(f"""
+                <div class="assistant-message">
+                    <div class="message-header">
+                        AI Assistant
+                    </div>
+                    <div class="message-content">
+                        {full_response}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
