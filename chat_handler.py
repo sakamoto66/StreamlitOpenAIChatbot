@@ -68,8 +68,8 @@ class ChatHandler:
         # Process streaming response
         full_response = ""
         
-        # Create a placeholder for streaming response
-        message_placeholder = st.empty()
+        # Use the message placeholder from the main UI
+        placeholder = st.empty()
         
         try:
             for chunk in stream:
@@ -78,12 +78,15 @@ class ChatHandler:
                     full_response += content
                     # Update the message content
                     assistant_message["content"] = full_response
-                    # Update the display using the placeholder with complete HTML structure
-                    message_placeholder.markdown("""
-                    <div class="assistant-message">
-                        <div class="message-header">AI Assistant</div>
-                        <div class="message-content">{}</div>
-                    </div>
-                    """.format(full_response), unsafe_allow_html=True)
+                    # Update the display using the placeholder
+                    placeholder.markdown(
+                        f"""
+                        <div class="assistant-message">
+                            <div class="message-header">AI Assistant</div>
+                            <div class="message-content">{full_response}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
         except Exception as e:
             st.session_state.error = f"Error during streaming: {str(e)}"

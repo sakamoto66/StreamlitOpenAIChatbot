@@ -61,27 +61,12 @@ def main():
     if "message_counter" not in st.session_state:
         st.session_state.message_counter = 0
     
-    # Container for all chat content
-    main_container = st.container()
-    
-    # Chat input and send button at the bottom
+    # Create containers for chat layout
+    chat_container = st.container()
     input_container = st.container()
-    with input_container:
-        user_input = st.text_area(
-            "Type your message here...",
-            key=f"user_input_{st.session_state.message_counter}",
-            height=100
-        )
-        
-        # Send button
-        if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
-            if user_input and user_input.strip():
-                chat_handler.process_user_input(user_input)
-                st.session_state.message_counter += 1
-                st.rerun()
-    
-    # Display chat messages above the input
-    with main_container:
+
+    # Display chat messages in the chat container
+    with chat_container:
         # Create a placeholder for streaming messages at the top
         message_placeholder = st.empty()
         
@@ -100,6 +85,8 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+    # Chat input and send button at the bottom
     with input_container:
         user_input = st.text_area(
             "Type your message here...",
@@ -111,11 +98,7 @@ def main():
         if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
             if user_input and user_input.strip():
                 chat_handler.process_user_input(user_input)
-                # Increment counter to generate new key for next input
                 st.session_state.message_counter += 1
-                # Reset message counter to create a new input widget
-                st.session_state.message_counter += 1
-                # Rerun to refresh the page with new input widget
                 st.rerun()
     
     # Footer
