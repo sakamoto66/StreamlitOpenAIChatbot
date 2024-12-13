@@ -88,44 +88,36 @@ def main():
                 if isinstance(response, str):
                     st.error(response)
                 else:
-                    # Create placeholder in chat container
-                    with chat_container:
-                        message_placeholder = st.empty()
-                        full_response = ""
-                        
-                        # Stream the response
-                        for chunk in response:
-                            if chunk.choices[0].delta.content is not None:
-                                full_response += chunk.choices[0].delta.content
-                                message_placeholder.markdown(f"""
-                                <div class="message-wrapper">
-                                    <div class="message-icon">
-                                        🤖
-                                    </div>
-                                    <div class="assistant-message">
-                                        <div class="message-content">
-                                            {html.escape(full_response)}▌
-                                        </div>
+                    # Create placeholder for streaming
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    
+                    # Stream the response
+                    for chunk in response:
+                        if chunk.choices[0].delta.content is not None:
+                            full_response += chunk.choices[0].delta.content
+                            # Display streaming response
+                            message_placeholder.markdown(f"""
+                            <div class="message-wrapper">
+                                <div class="message-icon">
+                                    🤖
+                                </div>
+                                <div class="assistant-message">
+                                    <div class="message-content">
+                                        {html.escape(full_response)}▌
                                     </div>
                                 </div>
-                                """, unsafe_allow_html=True)
-                        
-                        # Add the complete response to chat history
-                        chat_handler.add_message("assistant", full_response)
-                        
-                        # Update the placeholder with the final message
-                        message_placeholder.markdown(f"""
-                        <div class="message-wrapper">
-                            <div class="message-icon">
-                                🤖
                             </div>
-                            <div class="assistant-message">
-                                <div class="message-content">
-                                    {html.escape(full_response)}
-                                </div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
+                    
+                    # Add the complete response to chat history
+                    chat_handler.add_message("assistant", full_response)
+                    
+                    # Clear the placeholder after streaming is complete
+                    message_placeholder.empty()
+                    
+                    # Rerun to update chat history
+                    st.rerun()
     
     # Footer
     st.markdown("---")
