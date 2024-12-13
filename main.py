@@ -97,8 +97,10 @@ def main():
                 chat_handler.process_user_input(user_input)
                 # Increment counter to generate new key for next input
                 st.session_state.message_counter += 1
-                # Clear the input after sending
-                st.session_state[f"user_input_{st.session_state.message_counter-1}"] = ""
+                # Reset message counter to create a new input widget
+                st.session_state.message_counter += 1
+                # Rerun to refresh the page with new input widget
+                st.rerun()
     
     # Footer
     st.markdown("---")
