@@ -9,9 +9,15 @@ MODEL_NAME = "gpt-4o"
 class ChatHandler:
     def __init__(self):
         api_key = os.environ.get("OPENAI_API_KEY")
+        base_url = os.environ.get("OPENAI_API_BASE_URL", "https://api.openai.com/v1")
+        
         if not api_key:
             raise ValueError("OpenAI APIキーが設定されていません。APIキーを設定してください。")
-        self.client = OpenAI(api_key=api_key)
+        
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url=base_url
+        )
         
     def get_ai_response(self, messages):
         try:

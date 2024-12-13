@@ -38,7 +38,10 @@ pip install -r requirements.txt
 - `.env`ファイルを作成し、以下の内容を追加:
 ```
 OPENAI_API_KEY=your_api_key_here
+OPENAI_API_BASE_URL=https://api.openai.com/v1  # オプション: カスタムAPIサーバーのURLを指定
 ```
+
+カスタムAPIサーバーを使用する場合は、`OPENAI_API_BASE_URL`を設定してください。デフォルトではOpenAIの公式APIサーバーが使用されます。
 
 4. アプリケーションの起動:
 ```bash
