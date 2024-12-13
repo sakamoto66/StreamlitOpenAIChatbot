@@ -84,28 +84,35 @@ def main():
     message_placeholder = st.empty()
     
     # フッター固定の入力エリア
-    with st.container():
-        st.markdown("""
-        <div class="input-container">
-            <div class="input-container-inner">
-        """, unsafe_allow_html=True)
-        
+    st.markdown("""
+    <div class="input-container">
+        <div class="input-container-inner">
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([4, 1])
+    with col1:
         user_input = st.text_area(
             "メッセージを入力してください...",
             key=f"user_input_{st.session_state.message_counter}",
-            height=100
+            height=100,
+            label_visibility="collapsed"
+        )
+    with col2:
+        send_button = st.button(
+            "送信",
+            key=f"send_button_{st.session_state.message_counter}",
+            use_container_width=True
         )
         
-        if st.button("送信", key=f"send_button_{st.session_state.message_counter}"):
-            if user_input and user_input.strip():
-                chat_handler.process_user_input(user_input)
-                st.session_state.message_counter += 1
-                st.rerun()
-        
-        st.markdown("""
-            </div>
+    if send_button and user_input and user_input.strip():
+        chat_handler.process_user_input(user_input)
+        st.session_state.message_counter += 1
+        st.rerun()
+    
+    st.markdown("""
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")

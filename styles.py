@@ -2,14 +2,21 @@
 def get_css():
     return """
     <style>
+        /* Reset default margins and padding */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
         /* メインコンテナのスタイル */
         .main-container {
-            display: flex;
-            flex-direction: column;
+            position: relative;
             height: 100vh;
             max-width: 800px;
             margin: 0 auto;
-            padding: 0;
+            display: flex;
+            flex-direction: column;
         }
         
         /* チャットメッセージエリアのスタイル */
@@ -17,7 +24,12 @@ def get_css():
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
-            margin-bottom: 180px; /* フッターの高さ分の余白 */
+            padding-bottom: 200px; /* フッターの高さ分の余白 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         /* フッター固定入力エリアのスタイル */
@@ -30,11 +42,13 @@ def get_css():
             padding: 1rem;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            border-top: 1px solid #e2e8f0;
         }
         
         .input-container-inner {
             max-width: 800px;
             margin: 0 auto;
+            padding: 0 1rem;
         }
         
         .user-message {
