@@ -44,10 +44,11 @@ def main():
         """)
     
     # チャットメッセージ表示用のコンテナ
-    messages_container = st.container()
-    
-    # 既存のメッセージを表示
-    with messages_container:
+    with st.container():
+        # ストリーミングメッセージ用のプレースホルダー
+        stream_placeholder = st.empty()
+        
+        # 既存のメッセージを表示
         for msg in st.session_state.messages[1:]:  # システムメッセージをスキップ
             role = msg["role"]
             content = msg["content"]
@@ -65,9 +66,6 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-    
-    # ストリーミングメッセージ用のプレースホルダー
-    stream_placeholder = st.empty()
     
     # 入力フォーム
     with st.form(key="chat_form", clear_on_submit=True):
@@ -114,8 +112,8 @@ def main():
                     # プレースホルダーをクリア
                     stream_placeholder.empty()
                     
-                    # 画面を更新してメッセージを表示
-                    st.experimental_rerun()
+                    # メッセージを表示するために新しいメッセージを追加
+                    st.session_state.messages = st.session_state.messages
                     
                 except Exception as e:
                     st.error(f"Error during streaming: {str(e)}")
