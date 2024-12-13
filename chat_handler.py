@@ -79,11 +79,16 @@ class ChatHandler:
                     # Update the message content
                     assistant_message["content"] = full_response
                     # Update the display using the placeholder
+                    # チャットコンテナ内に直接メッセージを表示
                     placeholder.markdown(
                         f"""
-                        <div class="assistant-message">
-                            <div class="message-header">AI Assistant</div>
-                            <div class="message-content">{full_response}</div>
+                        <div class="main-container">
+                            <div class="chat-container">
+                                <div class="assistant-message">
+                                    <div class="message-header">AI Assistant</div>
+                                    <div class="message-content">{full_response}</div>
+                                </div>
+                            </div>
                         </div>
                         """,
                         unsafe_allow_html=True

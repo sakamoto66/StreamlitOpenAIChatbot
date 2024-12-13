@@ -43,63 +43,69 @@ def main():
         """)
     
     st.markdown("""
-    <div class="chat-container">
-        AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
+    <div class="main-container">
+        <div class="chat-container">
+            AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
+        
+            <!-- エラーメッセージ表示エリア -->
+            {error_message}
+            
+            <!-- チャットメッセージ表示エリア -->
+            <div id="chat-messages">
+                {chat_messages}
+            </div>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    # Display error message if exists
-    if st.session_state.error:
-        st.markdown(f"""
+    """.format(
+        error_message=f"""
         <div class="error-message">
             {st.session_state.error}
         </div>
-        """, unsafe_allow_html=True)
-        st.session_state.error = None
+        """ if st.session_state.error else "",
+        chat_messages="".join([
+            f"""
+            <div class="{message['role']}-message">
+                <div class="message-header">
+                    {'You' if message['role'] == 'user' else 'AI Assistant'}
+                </div>
+                <div class="message-content">
+                    {message['content']}
+                </div>
+            </div>
+            """ for message in st.session_state.messages[1:]  # システムメッセージをスキップ
+        ])
+    ), unsafe_allow_html=True)
     
-    # Initialize message counter in session state if it doesn't exist
+    # メッセージカウンターの初期化
     if "message_counter" not in st.session_state:
         st.session_state.message_counter = 0
     
-    # Create containers for chat layout
-    chat_container = st.container()
-    input_container = st.container()
-
-    # Display chat messages in the chat container
-    with chat_container:
-        # Create a placeholder for streaming messages at the top
-        message_placeholder = st.empty()
+    # ストリーミングメッセージ用のプレースホルダー
+    message_placeholder = st.empty()
+    
+    # フッター固定の入力エリア
+    with st.container():
+        st.markdown("""
+        <div class="input-container">
+            <div class="input-container-inner">
+        """, unsafe_allow_html=True)
         
-        # Display existing messages
-        for message in st.session_state.messages[1:]:  # Skip the system message
-            role = message["role"]
-            content = message["content"]
-            
-            st.markdown(f"""
-            <div class="{role}-message">
-                <div class="message-header">
-                    {'You' if role == 'user' else 'AI Assistant'}
-                </div>
-                <div class="message-content">
-                    {content}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # Chat input and send button at the bottom
-    with input_container:
         user_input = st.text_area(
-            "Type your message here...",
+            "メッセージを入力してください...",
             key=f"user_input_{st.session_state.message_counter}",
             height=100
         )
         
-        # Send button
-        if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
+        if st.button("送信", key=f"send_button_{st.session_state.message_counter}"):
             if user_input and user_input.strip():
                 chat_handler.process_user_input(user_input)
                 st.session_state.message_counter += 1
                 st.rerun()
+        
+        st.markdown("""
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")
