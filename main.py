@@ -4,13 +4,12 @@ from styles import get_css
 import streamlit.components.v1 as components
 import html
 
+
 def main():
-    st.set_page_config(
-        page_title="AI Chat Assistant",
-        page_icon="💬",
-        layout="wide"
-    )
-    
+    st.set_page_config(page_title="AI Chat Assistant",
+                       page_icon="💬",
+                       layout="wide")
+
     # Initialize chat handler
     try:
         chat_handler = ChatHandler()
@@ -18,13 +17,13 @@ def main():
     except ValueError as e:
         st.error(str(e))
         st.stop()
-    
+
     # Inject custom CSS
     components.html(get_css(), height=0)
-    
+
     # Header
     st.title("💬 AIチャットアシスタント")
-    
+
     # サイドバーに説明を追加
     with st.sidebar:
         st.markdown("""
@@ -42,31 +41,48 @@ def main():
         - APIキーが必要です
         - 個人情報は送信しないでください
         """)
-    
-    # チャットメッセージ表示用のコンテナ
-    chat_container = st.container()
-    
-    # 入力フォーム
-    with st.form(key="chat_form", clear_on_submit=True):
-        user_input = st.text_area(
-            "メッセージを入力してください...",
-            key="user_input",
-            height=100
-        )
-        submit_button = st.form_submit_button("送信")
-    
-    # メッセージ表示用のコンテナ内の処理
-    with chat_container:
-        # 既存のメッセージを表示
-        for msg in st.session_state.messages[1:]:  # システムメッセージをスキップ
-            role = msg["role"]
-            content = msg["content"]
-            icon = "👤" if role == "user" else "🤖"
-            
+
+    st.markdown("""
+    <div class="chat-container">
+        AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
+    </div>
+    """,
+                unsafe_allow_html=True)
+
+    # Display error message if exists
+    if st.session_state.error:
+        st.markdown(f"""
+        <div class="error-message">
+            {st.session_state.error}
+        </div>
+        """,
+                    unsafe_allow_html=True)
+        st.session_state.error = None
+
+    # Display chat messages
+    #st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
+    for message in st.session_state.messages[1:]:  # Skip the system message
+        role = message["role"]
+        content = message["content"]
+        if role == "user":
             st.markdown(f"""
-            <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
+            <div class="message-wrapper user-message-wrapper">
                 <div class="message-icon">
-                    {icon}
+                    👤
+                </div>
+                <div class="user-message">
+                    <div class="message-content">
+                        {html.escape(content)}
+                    </div>
+                </div>
+            </div>
+            """,
+                        unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div class="message-wrapper">
+                <div class="message-icon">
+                    🤖
                 </div>
                 <div class="{role}-message">
                     <div class="message-content">
@@ -74,59 +90,39 @@ def main():
                     </div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
-        
-        # ストリーミングメッセージ用のプレースホルダー
-        stream_placeholder = st.empty()
-    
-    if submit_button and user_input and user_input.strip():
-        # ユーザーメッセージをチャット履歴に追加
-        chat_handler.add_message("user", user_input)
-        
-        # AI応答を取得
-        response = chat_handler.process_user_input(user_input)
-        
-        if isinstance(response, str):
-            st.error(response)
-        else:
-            full_response = ""
-            try:
-                # レスポンスをストリーミング
-                for chunk in response:
-                    if chunk.choices[0].delta.content is not None:
-                        full_response += chunk.choices[0].delta.content
-                        stream_placeholder.markdown(f"""
-                        <div class="message-wrapper">
-                            <div class="message-icon">
-                                🤖
-                            </div>
-                            <div class="assistant-message">
-                                <div class="message-content">
-                                    {html.escape(full_response)}▌
-                                </div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                # 完全な応答をチャット履歴に追加
-                chat_handler.add_message("assistant", full_response)
-                
-                # メッセージを表示するために状態を更新
-                st.session_state["messages"] = st.session_state.messages.copy()
-                
-            except Exception as e:
-                st.error(f"Error during streaming: {str(e)}")
-            finally:
-                # ストリーミング表示をクリア
-                stream_placeholder.empty()
-    
+            """,
+                        unsafe_allow_html=True)
+    #st.markdown('</div>', unsafe_allow_html=True)
+
+    # Initialize message counter in session state if it doesn't exist
+    if "message_counter" not in st.session_state:
+        st.session_state.message_counter = 0
+
+    # Chat input with dynamic key
+    user_input = st.text_area(
+        "Type your message here...",
+        key=f"user_input_{st.session_state.message_counter}",
+        height=100)
+
+    # Send button
+    if st.button("Send",
+                 key=f"send_button_{st.session_state.message_counter}"):
+        if user_input and user_input.strip():
+            chat_handler.process_user_input(user_input)
+            # Increment counter to generate new key for next input
+            st.session_state.message_counter += 1
+            # Rerun to update the chat display
+            st.rerun()
+
     # Footer
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #666;">
         Powered by OpenAI GPT-4o
     </div>
-    """, unsafe_allow_html=True)
+    """,
+                unsafe_allow_html=True)
+
 
 if __name__ == "__main__":
     main()

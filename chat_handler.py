@@ -26,9 +26,8 @@ class ChatHandler:
                 messages=messages,
                 temperature=0.7,
                 max_tokens=1000,
-                stream=True
             )
-            return response, None
+            return response.choices[0].message.content, None
         except Exception as e:
             return None, f"Error: {str(e)}"
     
@@ -60,6 +59,5 @@ class ChatHandler:
         
         if error:
             st.session_state.error = error
-            return error
-        
-        return response
+        else:
+            self.add_message("assistant", response)
