@@ -47,17 +47,18 @@ def main():
         - 個人情報は送信しないでください
         """)
     
-    # Display chat messages in a container with a unique key
+    # Display chat messages
     with chat_container:
-        messages_container = st.empty()
-        messages_html = ""
+        # Create a container for all messages
+        st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
         
+        # Display existing messages
         for msg in st.session_state.messages[1:]:  # Skip system message
             role = msg["role"]
             content = msg["content"]
             icon = "👤" if role == "user" else "🤖"
             
-            messages_html += f"""
+            st.markdown(f"""
             <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
                 <div class="message-icon">
                     {icon}
@@ -68,10 +69,10 @@ def main():
                     </div>
                 </div>
             </div>
-            """
+            """, unsafe_allow_html=True)
         
-        messages_container.markdown(messages_html, unsafe_allow_html=True)
-
+        st.markdown('</div>', unsafe_allow_html=True)
+    
     # Input form
     with form_container:
         with st.form(key="chat_form", clear_on_submit=True):
@@ -84,26 +85,25 @@ def main():
             submit_button = st.form_submit_button("送信")
             
             if submit_button and user_input and user_input.strip():
-                # Add user message to chat history first
+                # Process user input
                 chat_handler.add_message("user", user_input)
-
+                
                 # Get AI response
                 response = chat_handler.process_user_input(user_input)
                 
                 if isinstance(response, str):
                     st.error(response)
                 else:
-                    # Create placeholder for streaming
-                    message_placeholder = st.empty()
+                    # Create a single placeholder for streaming
+                    stream_placeholder = st.empty()
                     full_response = ""
                     
-                    # Stream the response
                     try:
+                        # Stream the response
                         for chunk in response:
                             if chunk.choices[0].delta.content is not None:
                                 full_response += chunk.choices[0].delta.content
-                                # Display streaming response
-                                message_placeholder.markdown(f"""
+                                stream_placeholder.markdown(f"""
                                 <div class="message-wrapper">
                                     <div class="message-icon">
                                         🤖
@@ -116,17 +116,18 @@ def main():
                                 </div>
                                 """, unsafe_allow_html=True)
                         
-                        # Clear the placeholder before adding to history
-                        message_placeholder.empty()
-                        
-                        # Add the complete response to chat history
+                        # Add complete response to history
                         chat_handler.add_message("assistant", full_response)
                         
-                        # Rerun only if there are no errors
+                        # Clear streaming placeholder
+                        stream_placeholder.empty()
+                        
+                        # Rerun to update the display
                         st.rerun()
+                        
                     except Exception as e:
                         st.error(f"Error during streaming: {str(e)}")
-                        message_placeholder.empty()
+                        stream_placeholder.empty()
     
     # Footer
     st.markdown("---")
