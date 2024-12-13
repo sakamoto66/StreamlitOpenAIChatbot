@@ -93,7 +93,7 @@ def main():
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
             # Rerun to update the chat display
-            st.rerun()
+            st.empty().markdown("", unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")

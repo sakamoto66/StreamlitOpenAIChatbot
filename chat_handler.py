@@ -74,4 +74,4 @@ class ChatHandler:
                 # Update the current message
                 st.session_state.messages[current_message_idx]["content"] = full_response
                 # Force streamlit to update the display
-                st.experimental_rerun()
+                st.rerun()
