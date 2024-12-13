@@ -47,14 +47,17 @@ def main():
         - 個人情報は送信しないでください
         """)
     
-    # Display chat messages
+    # Display chat messages in a container with a unique key
     with chat_container:
+        messages_container = st.empty()
+        messages_html = ""
+        
         for msg in st.session_state.messages[1:]:  # Skip system message
             role = msg["role"]
             content = msg["content"]
             icon = "👤" if role == "user" else "🤖"
             
-            st.markdown(f"""
+            messages_html += f"""
             <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
                 <div class="message-icon">
                     {icon}
@@ -65,7 +68,9 @@ def main():
                     </div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """
+        
+        messages_container.markdown(messages_html, unsafe_allow_html=True)
 
     # Input form
     with form_container:
@@ -111,13 +116,13 @@ def main():
                                 </div>
                                 """, unsafe_allow_html=True)
                         
+                        # Clear the placeholder before adding to history
+                        message_placeholder.empty()
+                        
                         # Add the complete response to chat history
                         chat_handler.add_message("assistant", full_response)
                         
-                        # Clear the placeholder
-                        message_placeholder.empty()
-                        
-                        # Force a rerun without the placeholder
+                        # Rerun only if there are no errors
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error during streaming: {str(e)}")
