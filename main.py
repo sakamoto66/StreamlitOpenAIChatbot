@@ -22,10 +22,31 @@ def main():
     components.html(get_css(), height=0)
     
     # Header
-    st.title("💬 AI Chat Assistant")
+    st.title("💬 AIチャットアシスタント")
+    
+    # サイドバーに説明を追加
+    with st.sidebar:
+        st.markdown("""
+        ### 使い方
+        1. メッセージを入力欄に書き込む
+        2. Sendボタンをクリックするか、Enterキーを押す
+        3. AIアシスタントからの返答を待つ
+        
+        ### 特徴
+        - 自然な会話が可能
+        - 日本語で対話可能
+        - 文脈を理解して返答
+        
+        ### 注意事項
+        - APIキーが必要です
+        - 個人情報は送信しないでください
+        """)
+    
     st.markdown("""
-    Welcome to the AI Chat Assistant! Ask me anything, and I'll do my best to help you.
-    """)
+    <div class="chat-container">
+        AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
+    </div>
+    """, unsafe_allow_html=True)
     
     # Display error message if exists
     if st.session_state.error:
