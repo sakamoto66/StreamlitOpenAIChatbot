@@ -44,10 +44,19 @@ def main():
         """)
     
     # チャットメッセージ表示用のコンテナ
-    with st.container():
-        # ストリーミングメッセージ用のプレースホルダー
-        stream_placeholder = st.empty()
-        
+    chat_container = st.container()
+    
+    # 入力フォーム
+    with st.form(key="chat_form", clear_on_submit=True):
+        user_input = st.text_area(
+            "メッセージを入力してください...",
+            key="user_input",
+            height=100
+        )
+        submit_button = st.form_submit_button("送信")
+    
+    # メッセージ表示用のコンテナ内の処理
+    with chat_container:
         # 既存のメッセージを表示
         for msg in st.session_state.messages[1:]:  # システムメッセージをスキップ
             role = msg["role"]
@@ -66,58 +75,50 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
+        
+        # ストリーミングメッセージ用のプレースホルダー
+        stream_placeholder = st.empty()
     
-    # 入力フォーム
-    with st.form(key="chat_form", clear_on_submit=True):
-        user_input = st.text_area(
-            "メッセージを入力してください...",
-            key="user_input",
-            height=100
-        )
+    if submit_button and user_input and user_input.strip():
+        # ユーザーメッセージをチャット履歴に追加
+        chat_handler.add_message("user", user_input)
         
-        submit_button = st.form_submit_button("送信")
+        # AI応答を取得
+        response = chat_handler.process_user_input(user_input)
         
-        if submit_button and user_input and user_input.strip():
-            # ユーザーメッセージをチャット履歴に追加
-            chat_handler.add_message("user", user_input)
-            
-            # AI応答を取得
-            response = chat_handler.process_user_input(user_input)
-            
-            if isinstance(response, str):
-                st.error(response)
-            else:
-                full_response = ""
-                try:
-                    # レスポンスをストリーミング
-                    for chunk in response:
-                        if chunk.choices[0].delta.content is not None:
-                            full_response += chunk.choices[0].delta.content
-                            stream_placeholder.markdown(f"""
-                            <div class="message-wrapper">
-                                <div class="message-icon">
-                                    🤖
-                                </div>
-                                <div class="assistant-message">
-                                    <div class="message-content">
-                                        {html.escape(full_response)}▌
-                                    </div>
+        if isinstance(response, str):
+            st.error(response)
+        else:
+            full_response = ""
+            try:
+                # レスポンスをストリーミング
+                for chunk in response:
+                    if chunk.choices[0].delta.content is not None:
+                        full_response += chunk.choices[0].delta.content
+                        stream_placeholder.markdown(f"""
+                        <div class="message-wrapper">
+                            <div class="message-icon">
+                                🤖
+                            </div>
+                            <div class="assistant-message">
+                                <div class="message-content">
+                                    {html.escape(full_response)}▌
                                 </div>
                             </div>
-                            """, unsafe_allow_html=True)
-                    
-                    # 完全な応答をチャット履歴に追加
-                    chat_handler.add_message("assistant", full_response)
-                    
-                    # プレースホルダーをクリア
-                    stream_placeholder.empty()
-                    
-                    # メッセージを表示するために新しいメッセージを追加
-                    st.session_state.messages = st.session_state.messages
-                    
-                except Exception as e:
-                    st.error(f"Error during streaming: {str(e)}")
-                    stream_placeholder.empty()
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                # 完全な応答をチャット履歴に追加
+                chat_handler.add_message("assistant", full_response)
+                
+                # メッセージを表示するために状態を更新
+                st.session_state["messages"] = st.session_state.messages.copy()
+                
+            except Exception as e:
+                st.error(f"Error during streaming: {str(e)}")
+            finally:
+                # ストリーミング表示をクリア
+                stream_placeholder.empty()
     
     # Footer
     st.markdown("---")
