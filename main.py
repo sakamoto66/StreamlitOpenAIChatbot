@@ -25,6 +25,10 @@ def main():
     # Header
     st.title("💬 AIチャットアシスタント")
     
+    # Create main containers
+    chat_container = st.container()
+    form_container = st.container()
+    
     # サイドバーに説明を追加
     with st.sidebar:
         st.markdown("""
@@ -42,73 +46,6 @@ def main():
         - APIキーが必要です
         - 個人情報は送信しないでください
         """)
-    
-    # チャットコンテナ
-    chat_container = st.container()
-    
-    # 入力エリア
-    input_container = st.container()
-    
-    with input_container:
-        # フォームを使用してユーザー入力を管理
-        with st.form(key="chat_form", clear_on_submit=True):
-            user_input = st.text_area(
-                "メッセージを入力してください...",
-                key="user_input_area",
-                height=100
-            )
-            
-            # Submit button
-            submit_button = st.form_submit_button("送信")
-            
-            if submit_button and user_input and user_input.strip():
-                # Process user input and get streaming response
-                response = chat_handler.process_user_input(user_input)
-                
-                if isinstance(response, str):
-                    # Show error message if response is string (error message)
-                    st.error(response)
-                else:
-                    # Create placeholder for streaming response
-                    message_placeholder = st.empty()
-                    full_response = ""
-                    
-                    # Display streaming response
-                    for chunk in response:
-                        if chunk.choices[0].delta.content is not None:
-                            full_response += chunk.choices[0].delta.content
-                            message_placeholder.markdown(f"""
-                            <div class="message-wrapper">
-                                <div class="message-icon">
-                                    🤖
-                                </div>
-                                <div class="assistant-message">
-                                    <div class="message-content">
-                                        {html.escape(full_response)}▌
-                                    </div>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    # Add the complete response to chat history
-                    chat_handler.add_message("assistant", full_response)
-                    
-                    # Remove the typing indicator
-                    message_placeholder.empty()
-                    
-                    # メッセージを表示
-                    st.markdown(f"""
-                    <div class="message-wrapper">
-                        <div class="message-icon">
-                            🤖
-                        </div>
-                        <div class="assistant-message">
-                            <div class="message-content">
-                                {html.escape(full_response)}
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
     
     # Display chat messages
     with chat_container:
@@ -129,9 +66,69 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-        
-        # Last message display is handled by the streaming logic
-        pass
+
+    # Input form
+    with form_container:
+        with st.form(key="chat_form", clear_on_submit=True):
+            user_input = st.text_area(
+                "メッセージを入力してください...",
+                key="user_input_area",
+                height=100
+            )
+            
+            submit_button = st.form_submit_button("送信")
+            
+            if submit_button and user_input and user_input.strip():
+                # Add user message to chat history first
+                chat_handler.add_message("user", user_input)
+
+                # Get AI response
+                response = chat_handler.process_user_input(user_input)
+                
+                if isinstance(response, str):
+                    st.error(response)
+                else:
+                    # Create placeholder in chat container
+                    with chat_container:
+                        message_placeholder = st.empty()
+                        full_response = ""
+                        
+                        # Stream the response
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                message_placeholder.markdown(f"""
+                                <div class="message-wrapper">
+                                    <div class="message-icon">
+                                        🤖
+                                    </div>
+                                    <div class="assistant-message">
+                                        <div class="message-content">
+                                            {html.escape(full_response)}▌
+                                        </div>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        # Add the complete response to chat history
+                        chat_handler.add_message("assistant", full_response)
+                        
+                        # Remove the typing indicator
+                        message_placeholder.empty()
+                        
+                        # Display final message
+                        st.markdown(f"""
+                        <div class="message-wrapper">
+                            <div class="message-icon">
+                                🤖
+                            </div>
+                            <div class="assistant-message">
+                                <div class="message-content">
+                                    {html.escape(full_response)}
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")
