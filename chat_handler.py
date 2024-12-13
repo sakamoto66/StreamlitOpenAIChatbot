@@ -82,13 +82,9 @@ class ChatHandler:
                     # チャットコンテナ内に直接メッセージを表示
                     placeholder.markdown(
                         f"""
-                        <div class="main-container">
-                            <div class="chat-container">
-                                <div class="assistant-message">
-                                    <div class="message-header">AI Assistant</div>
-                                    <div class="message-content">{full_response}</div>
-                                </div>
-                            </div>
+                        <div class="message assistant-message">
+                            <div class="message-header">AI アシスタント</div>
+                            <div class="message-content">{full_response}</div>
                         </div>
                         """,
                         unsafe_allow_html=True

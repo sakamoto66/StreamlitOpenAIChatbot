@@ -7,7 +7,8 @@ def main():
     st.set_page_config(
         page_title="AI Chat Assistant",
         page_icon="💬",
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="collapsed"
     )
     
     # Initialize chat handler
@@ -21,10 +22,9 @@ def main():
     # Inject custom CSS
     components.html(get_css(), height=0)
     
-    # Header
+    # Header and sidebar
     st.title("💬 AIチャットアシスタント")
     
-    # サイドバーに説明を追加
     with st.sidebar:
         st.markdown("""
         ### 使い方
@@ -42,54 +42,46 @@ def main():
         - 個人情報は送信しないでください
         """)
     
+    # Main chat container
     st.markdown("""
-    <div class="main-container">
-        <div class="chat-container">
-            AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
-        
-            <!-- エラーメッセージ表示エリア -->
-            {error_message}
-            
-            <!-- チャットメッセージ表示エリア -->
-            <div id="chat-messages">
-                {chat_messages}
+        <div class="main-chat-container">
+            <div class="messages-area">
+                <!-- Error message -->
+                {}
+                
+                <!-- Chat messages -->
+                {}
             </div>
         </div>
-    </div>
     """.format(
-        error_message=f"""
-        <div class="error-message">
-            {st.session_state.error}
-        </div>
-        """ if st.session_state.error else "",
-        chat_messages="".join([
-            f"""
-            <div class="{message['role']}-message">
+        f'<div class="error-message">{st.session_state.error}</div>' if st.session_state.error else '',
+        ''.join([
+            f'''
+            <div class="message {'user-message' if message['role'] == 'user' else 'assistant-message'}">
                 <div class="message-header">
-                    {'You' if message['role'] == 'user' else 'AI Assistant'}
+                    {'あなた' if message['role'] == 'user' else 'AI アシスタント'}
                 </div>
                 <div class="message-content">
                     {message['content']}
                 </div>
             </div>
-            """ for message in st.session_state.messages[1:]  # システムメッセージをスキップ
+            ''' for message in st.session_state.messages[1:]  # Skip system message
         ])
     ), unsafe_allow_html=True)
     
-    # メッセージカウンターの初期化
+    # Fixed input area container
+    st.markdown('<div class="fixed-input-area">', unsafe_allow_html=True)
+    
+    # Input container
+    st.markdown('<div class="input-container">', unsafe_allow_html=True)
+    
+    # Message counter for unique keys
     if "message_counter" not in st.session_state:
         st.session_state.message_counter = 0
     
-    # ストリーミングメッセージ用のプレースホルダー
-    message_placeholder = st.empty()
-    
-    # フッター固定の入力エリア
-    st.markdown("""
-    <div class="input-container">
-        <div class="input-container-inner">
-    """, unsafe_allow_html=True)
-    
+    # Input columns
     col1, col2 = st.columns([4, 1])
+    
     with col1:
         user_input = st.text_area(
             "メッセージを入力してください...",
@@ -97,30 +89,22 @@ def main():
             height=100,
             label_visibility="collapsed"
         )
+    
     with col2:
         send_button = st.button(
             "送信",
             key=f"send_button_{st.session_state.message_counter}",
             use_container_width=True
         )
-        
+    
+    # Close containers
+    st.markdown('</div></div>', unsafe_allow_html=True)
+    
+    # Handle user input
     if send_button and user_input and user_input.strip():
         chat_handler.process_user_input(user_input)
         st.session_state.message_counter += 1
         st.rerun()
-    
-    st.markdown("""
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Footer
-    st.markdown("---")
-    st.markdown("""
-    <div style="text-align: center; color: #666;">
-        Powered by OpenAI GPT-4o
-    </div>
-    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
