@@ -6,39 +6,70 @@ def get_css():
             max-width: 800px;
             margin: 0 auto;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+            position: relative;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            margin: 1rem 0;
+            gap: 8px;
+        }
+        
+        .user-message-wrapper {
+            flex-direction: row-reverse;
+        }
+        
+        .message-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         
         .user-message {
-            background-color: #e6f3ff;
+            background-color: #f1f1f1;
             padding: 1rem;
-            border-radius: 15px;
-            margin: 1rem 0;
+            border-radius: 20px;
             border-bottom-right-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-right: 12px;
+            position: relative;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             animation: slideIn 0.3s ease-out;
         }
         
         .assistant-message {
-            background-color: #f0f2f6;
+            background-color: white;
             padding: 1rem;
-            border-radius: 15px;
-            margin: 1rem 0;
+            border-radius: 20px;
             border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-left: 12px;
+            position: relative;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             animation: slideIn 0.3s ease-out;
-        }
-        
-        .message-header {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
         }
         
         .message-content {
             font-size: 1rem;
             line-height: 1.6;
-            color: #2d3748;
+            color: #333;
+            word-wrap: break-word;
         }
         
         .error-message {

@@ -58,20 +58,27 @@ def main():
         st.session_state.error = None
     
     # Display chat messages
+    st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
     for message in st.session_state.messages[1:]:  # Skip the system message
         role = message["role"]
         content = message["content"]
         
+        # Define icon based on role
+        icon = "👤" if role == "user" else "🤖"
+        
         st.markdown(f"""
-        <div class="{role}-message">
-            <div class="message-header">
-                {'You' if role == 'user' else 'AI Assistant'}
+        <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
+            <div class="message-icon">
+                {icon}
             </div>
-            <div class="message-content">
-                {content}
+            <div class="{role}-message">
+                <div class="message-content">
+                    {content}
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Initialize message counter in session state if it doesn't exist
     if "message_counter" not in st.session_state:
