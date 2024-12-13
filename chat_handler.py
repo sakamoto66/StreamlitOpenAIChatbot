@@ -78,13 +78,12 @@ class ChatHandler:
                     full_response += content
                     # Update the message content
                     assistant_message["content"] = full_response
-                    # Update the display using the placeholder
-                    message_placeholder.markdown(
-                        f'<div class="assistant-message">'
-                        f'<div class="message-header">AI Assistant</div>'
-                        f'<div class="message-content">{full_response}</div>'
-                        f'</div>',
-                        unsafe_allow_html=True
-                    )
+                    # Update the display using the placeholder with complete HTML structure
+                    message_placeholder.markdown("""
+                    <div class="assistant-message">
+                        <div class="message-header">AI Assistant</div>
+                        <div class="message-content">{}</div>
+                    </div>
+                    """.format(full_response), unsafe_allow_html=True)
         except Exception as e:
             st.session_state.error = f"Error during streaming: {str(e)}"

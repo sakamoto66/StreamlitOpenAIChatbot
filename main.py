@@ -57,9 +57,35 @@ def main():
         """, unsafe_allow_html=True)
         st.session_state.error = None
     
-    # Display chat messages
-    chat_container = st.container()
-    with chat_container:
+    # Initialize message counter in session state if it doesn't exist
+    if "message_counter" not in st.session_state:
+        st.session_state.message_counter = 0
+    
+    # Container for all chat content
+    main_container = st.container()
+    
+    # Chat input and send button at the bottom
+    input_container = st.container()
+    with input_container:
+        user_input = st.text_area(
+            "Type your message here...",
+            key=f"user_input_{st.session_state.message_counter}",
+            height=100
+        )
+        
+        # Send button
+        if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
+            if user_input and user_input.strip():
+                chat_handler.process_user_input(user_input)
+                st.session_state.message_counter += 1
+                st.rerun()
+    
+    # Display chat messages above the input
+    with main_container:
+        # Create a placeholder for streaming messages at the top
+        message_placeholder = st.empty()
+        
+        # Display existing messages
         for message in st.session_state.messages[1:]:  # Skip the system message
             role = message["role"]
             content = message["content"]
@@ -74,16 +100,6 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-    
-    # Initialize message counter in session state if it doesn't exist
-    if "message_counter" not in st.session_state:
-        st.session_state.message_counter = 0
-    
-    # Create a placeholder for the new message at the bottom of the chat container
-    message_placeholder = st.empty()
-    
-    # Chat input and send button in a separate container at the bottom
-    input_container = st.container()
     with input_container:
         user_input = st.text_area(
             "Type your message here...",
