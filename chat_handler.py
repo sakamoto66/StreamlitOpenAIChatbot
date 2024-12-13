@@ -21,13 +21,13 @@ class ChatHandler:
         
     def get_ai_response(self, messages):
         try:
-            response = self.client.chat.completions.create(
+            return self.client.chat.completions.create(
                 model=MODEL_NAME,
                 messages=messages,
                 temperature=0.7,
                 max_tokens=1000,
-            )
-            return response.choices[0].message.content, None
+                stream=True,
+            ), None
         except Exception as e:
             return None, f"Error: {str(e)}"
     
@@ -54,10 +54,24 @@ class ChatHandler:
         # Add user message to chat history
         self.add_message("user", user_input)
         
-        # Get AI response
-        response, error = self.get_ai_response(st.session_state.messages)
+        # Create empty placeholder for assistant's message
+        self.add_message("assistant", "")
+        current_message_idx = len(st.session_state.messages) - 1
+        
+        # Get AI response stream
+        stream, error = self.get_ai_response(st.session_state.messages)
         
         if error:
             st.session_state.error = error
-        else:
-            self.add_message("assistant", response)
+            return
+        
+        # Process streaming response
+        full_response = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                content = chunk.choices[0].delta.content
+                full_response += content
+                # Update the current message
+                st.session_state.messages[current_message_idx]["content"] = full_response
+                # Force streamlit to update the display
+                st.experimental_rerun()

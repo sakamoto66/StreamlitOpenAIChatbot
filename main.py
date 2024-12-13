@@ -58,20 +58,22 @@ def main():
         st.session_state.error = None
     
     # Display chat messages
-    for message in st.session_state.messages[1:]:  # Skip the system message
-        role = message["role"]
-        content = message["content"]
-        
-        st.markdown(f"""
-        <div class="{role}-message">
-            <div class="message-header">
-                {'You' if role == 'user' else 'AI Assistant'}
+    chat_container = st.container()
+    with chat_container:
+        for message in st.session_state.messages[1:]:  # Skip the system message
+            role = message["role"]
+            content = message["content"]
+            
+            st.markdown(f"""
+            <div class="{role}-message">
+                <div class="message-header">
+                    {'You' if role == 'user' else 'AI Assistant'}
+                </div>
+                <div class="message-content">
+                    {content}
+                </div>
             </div>
-            <div class="message-content">
-                {content}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
     
     # Initialize message counter in session state if it doesn't exist
     if "message_counter" not in st.session_state:
