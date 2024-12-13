@@ -118,6 +118,20 @@ def main():
     # Send button
     if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
         if user_input and user_input.strip():
+            # Create a placeholder for user message
+            user_message_placeholder = chat_placeholder.markdown(f"""
+            <div class="message-wrapper user-message-wrapper">
+                <div class="message-icon">
+                    👤
+                </div>
+                <div class="user-message">
+                    <div class="message-content">
+                        {html.escape(user_input)}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
             # Add user message to chat history
             chat_handler.add_message("user", user_input)
             
