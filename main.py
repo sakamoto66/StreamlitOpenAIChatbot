@@ -43,88 +43,64 @@ def main():
         - 個人情報は送信しないでください
         """)
     
-    st.markdown("""
-    <div class="chat-container">
-        AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
-    </div>
-    """, unsafe_allow_html=True)
+    # チャットコンテナ
+    chat_container = st.container()
     
-    # Display error message if exists
-    if st.session_state.error:
-        st.markdown(f"""
-        <div class="error-message">
-            {st.session_state.error}
-        </div>
-        """, unsafe_allow_html=True)
-        st.session_state.error = None
+    # 入力エリア
+    input_container = st.container()
     
-    # Initialize message counter in session state if it doesn't exist
-    if "message_counter" not in st.session_state:
-        st.session_state.message_counter = 0
-    
-    # Create a single container for all chat messages
-    chat_placeholder = st.container()
-    
-    # Chat input with dynamic key
-    user_input = st.text_area(
-        "Type your message here...",
-        key=f"user_input_{st.session_state.message_counter}",
-        height=100
-    )
-    
-    # Send button
-    if st.button("Send", key=f"send_button_{st.session_state.message_counter}"):
-        if user_input and user_input.strip():
-            # Clear the chat placeholder
-            chat_placeholder.empty()
-            
-            # Add user message to chat history
-            chat_handler.add_message("user", user_input)
-            
-            # Display all previous messages
-            for msg in st.session_state.messages[1:-1]:  # Skip system message and latest user message
-                role = msg["role"]
-                content = msg["content"]
-                icon = "👤" if role == "user" else "🤖"
+    with input_container:
+        # Chat input
+        user_input = st.text_area(
+            "メッセージを入力してください...",
+            key="user_input",
+            height=100
+        )
+        
+        # Send button
+        if st.button("送信", key="send_button"):
+            if user_input and user_input.strip():
+                # Add user message to chat history
+                chat_handler.add_message("user", user_input)
                 
-                chat_placeholder.markdown(f"""
-                <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
-                    <div class="message-icon">
-                        {icon}
-                    </div>
-                    <div class="{role}-message">
-                        <div class="message-content">
-                            {html.escape(content)}
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                # Clear the input
+                st.session_state.user_input = ""
+                
+                # Rerun to update UI immediately
+                st.rerun()
+    
+    # Display chat messages
+    with chat_container:
+        for msg in st.session_state.messages[1:]:  # Skip system message
+            role = msg["role"]
+            content = msg["content"]
+            icon = "👤" if role == "user" else "🤖"
             
-            # Display the latest user message
-            chat_placeholder.markdown(f"""
-            <div class="message-wrapper user-message-wrapper">
+            st.markdown(f"""
+            <div class="message-wrapper {'user-message-wrapper' if role == 'user' else ''}">
                 <div class="message-icon">
-                    👤
+                    {icon}
                 </div>
-                <div class="user-message">
+                <div class="{role}-message">
                     <div class="message-content">
-                        {html.escape(user_input)}
+                        {html.escape(content)}
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Create a placeholder for streaming response
-            message_placeholder = chat_placeholder.empty()
-            full_response = ""
-            
-            # Get streaming response
+        
+        # Handle streaming response if there's a new user message
+        if st.session_state.messages[-1]["role"] == "user":
             response, error = chat_handler.get_ai_response(st.session_state.messages)
             
             if error:
-                st.session_state.error = error
+                st.error(error)
             else:
-                # Process the streaming response
+                # Create placeholder for streaming response
+                message_placeholder = st.empty()
+                full_response = ""
+                
+                # Display streaming response
                 for chunk in response:
                     if chunk.choices[0].delta.content is not None:
                         full_response += chunk.choices[0].delta.content
@@ -141,11 +117,14 @@ def main():
                         </div>
                         """, unsafe_allow_html=True)
                 
-                # Add the full response to chat history
+                # Add the complete response to chat history
                 chat_handler.add_message("assistant", full_response)
-            
-            # Increment counter to generate new key for next input
-            st.session_state.message_counter += 1
+                
+                # Remove the typing indicator
+                message_placeholder.empty()
+                
+                # Rerun to update UI with the new message
+                st.rerun()
     
     # Footer
     st.markdown("---")
