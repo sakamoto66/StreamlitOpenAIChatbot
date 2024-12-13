@@ -108,11 +108,55 @@ def main():
     if st.button("Send",
                  key=f"send_button_{st.session_state.message_counter}"):
         if user_input and user_input.strip():
-            chat_handler.process_user_input(user_input)
+            # Add user message
+            chat_handler.add_message("user", user_input)
+            
+            # Create a placeholder for the assistant's message
+            message_placeholder = st.empty()
+            full_response = ""
+            
+            # Get streaming response
+            response, error = chat_handler.get_ai_response(st.session_state.messages)
+            
+            if error:
+                st.session_state.error = error
+                st.rerun()
+            else:
+                # Display streaming response
+                message_placeholder.markdown("""
+                <div class="message-wrapper">
+                    <div class="message-icon">
+                        🤖
+                    </div>
+                    <div class="assistant-message">
+                        <div class="message-content">
+                            ⌛
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                for chunk in response:
+                    if chunk.choices[0].delta.content is not None:
+                        full_response += chunk.choices[0].delta.content
+                        message_placeholder.markdown(f"""
+                        <div class="message-wrapper">
+                            <div class="message-icon">
+                                🤖
+                            </div>
+                            <div class="assistant-message">
+                                <div class="message-content">
+                                    {html.escape(full_response)}
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                # Save the complete response
+                chat_handler.add_message("assistant", full_response)
+                
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
-            # Rerun to update the chat display
-            st.rerun()
 
     # Footer
     st.markdown("---")

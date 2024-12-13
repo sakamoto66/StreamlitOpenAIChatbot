@@ -26,8 +26,9 @@ class ChatHandler:
                 messages=messages,
                 temperature=0.7,
                 max_tokens=1000,
+                stream=True
             )
-            return response.choices[0].message.content, None
+            return response, None
         except Exception as e:
             return None, f"Error: {str(e)}"
     
