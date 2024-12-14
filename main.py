@@ -6,7 +6,7 @@ import html
 
 
 def show_user_message(content):
-    return f"""
+    return f"""<div class="chat-messages">
     <div class="message-wrapper user-message-wrapper">
         <div class="message-icon">
             👤
@@ -16,12 +16,12 @@ def show_user_message(content):
                 {html.escape(content)}
             </div>
         </div>
-    </div>
+    </div></div>
     """
 
 
 def show_assistant_message(content):
-    return f"""
+    return f"""<div class="chat-messages">
     <div class="message-wrapper">
         <div class="message-icon">
             🤖
@@ -31,7 +31,7 @@ def show_assistant_message(content):
                 {html.escape(content)}
             </div></div>
         </div>
-    </div>
+    </div></div>
     """
 
 
@@ -111,7 +111,6 @@ def main():
         st.session_state.message_counter = 0
 
     # Display chat messages
-    st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
     for message in st.session_state.messages[1:]:  # Skip the system message
         role = message["role"]
         content = message["content"]
@@ -126,7 +125,6 @@ def main():
     if st.session_state.message_counter > 0 and st.session_state.messages[-1][
             "role"] == "user":
         message_placeholder = st.empty()
-        st.markdown('</div>', unsafe_allow_html=True)
         show_footer(chat_handler, st.session_state.message_counter + 1)
         full_response = ""
 
@@ -153,7 +151,6 @@ def main():
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
     else:
-        st.markdown('</div>', unsafe_allow_html=True)
         show_footer(chat_handler, st.session_state.message_counter)
     # Footer
     st.markdown("---")
