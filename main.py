@@ -5,34 +5,27 @@ import streamlit.components.v1 as components
 import html
 
 
-def show_user_message(content):
-    return f"""<div class="chat-messages">
-    <div class="message-wrapper user-message-wrapper">
-        <div class="message-icon">
-            👤
-        </div>
-        <div class="user-message">
-            <div class="message-content">
-                {html.escape(content)}
-            </div>
-        </div>
-    </div></div>
-    """
+def show_user_message(st, content):
+    st.html('<div class="message-wrapper user-message-wrapper">')
+    st.html('  <div class="message-icon">👤</div>')
+    st.html('  <div class="user-message">')
+    st.html('    <div class="message-content">')
+    st.html(html.escape(content))
+    st.html('    </div>')
+    st.html('  </div>')
+    st.html('</div>')
 
 
-def show_assistant_message(content):
-    return f"""<div class="chat-messages">
-    <div class="message-wrapper">
-        <div class="message-icon">
-            🤖
-        </div>
-        <div class="assistant-message">
-            <div class="message-content">
-                {html.escape(content)}
-            </div></div>
-        </div>
-    </div></div>
-    """
+def show_assistant_message(st):
+    st.html('<div class="message-wrapper">')
+    st.html('  <div class="message-icon">🤖</div>')
+    st.html('  <div class="assistant-message">')
+    st.html('    <div class="message-content">')
+    message_placeholder = st.empty()
+    st.html('    </div>')
+    st.html('  </div>')
+    st.html('</div>')
+    return message_placeholder
 
 
 def show_footer(chat_handler, counter):
@@ -89,12 +82,11 @@ def main():
         - 個人情報は送信しないでください
         """)
 
-    st.markdown("""
+    st.html("""
     <div class="chat-container">
         AIアシスタントと自由に会話ができます。どんな質問でもお気軽にどうぞ！
     </div>
-    """,
-                unsafe_allow_html=True)
+    """)
 
     # Display error message if exists
     if st.session_state.error:
@@ -111,20 +103,21 @@ def main():
         st.session_state.message_counter = 0
 
     # Display chat messages
+    st.html('<div class="chat-messages">')
     for message in st.session_state.messages[1:]:  # Skip the system message
         role = message["role"]
         content = message["content"]
-        content2 = ""
         if role == "user":
-            content2 = show_user_message(content)
+            show_user_message(st, content)
         else:
-            content2 = show_assistant_message(content)
-        st.markdown(content2, unsafe_allow_html=True)
+            message_placeholder = show_assistant_message(st)
+            message_placeholder.markdown(content)
 
     # Create a placeholder for the assistant's message
     if st.session_state.message_counter > 0 and st.session_state.messages[-1][
             "role"] == "user":
-        message_placeholder = st.empty()
+        message_placeholder = show_assistant_message(st)
+        st.html('</div>')
         show_footer(chat_handler, st.session_state.message_counter + 1)
         full_response = ""
 
@@ -136,30 +129,25 @@ def main():
             st.session_state.error = error
         else:
             # Display streaming response
-            content2 = show_assistant_message("⌛")
-            message_placeholder.markdown(content2, unsafe_allow_html=True)
-
             for chunk in response:
                 if chunk.choices[0].delta.content is not None:
                     full_response += chunk.choices[0].delta.content
-                    content2 = show_assistant_message(full_response)
-                    message_placeholder.markdown(content2,
-                                                 unsafe_allow_html=True)
+                    message_placeholder.markdown(full_response)
 
             # Save the complete response
             chat_handler.add_message("assistant", full_response)
             # Increment counter to generate new key for next input
             st.session_state.message_counter += 1
     else:
+        st.html('</div>')
         show_footer(chat_handler, st.session_state.message_counter)
     # Footer
     st.markdown("---")
-    st.markdown("""
+    st.html("""
     <div style="text-align: center; color: #666;">
         Powered by OpenAI GPT-4o
     </div>
-    """,
-                unsafe_allow_html=True)
+    """)
 
 
 if __name__ == "__main__":
